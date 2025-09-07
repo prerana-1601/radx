@@ -16,3 +16,4 @@ __pycache__/
 # Ignore outputs
 outputs/
 uploads/
+.env
