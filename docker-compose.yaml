@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    image: prerana/radx-cv-api:latest
+    container_name: radx-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/workspace
+      - ./models:/app/models
+      - ./data:/app/data
+      - ./outputs:/app/outputs
+      - ./rag:/app/rag
+      - ./api:/app/api
+      - ./uploads:/app/uploads
+      - ./firestore-access.json:/workspace/firestore-access.json:ro
+    working_dir: /workspace
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /workspace/firestore-access.json
+    command: uvicorn api_main:app --host 0.0.0.0 --port 8000 --reload
+
+  ui:
+    build:
+      context: ./streamlit  # put your streamlit app (the code you pasted) in ./streamlit/
+    image: prerana/radx-cv-ui:latest
+    container_name: radx-ui
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    environment:
+      API_URL: "http://api:8000/api"   # 👈 use service name `api`, not localhost
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0

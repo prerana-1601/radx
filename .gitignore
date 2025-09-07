@@ -1,0 +1,18 @@
+# Ignore secrets
+firestore-access.json
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore local environment
+.env
+*.env
+
+# Ignore Docker artifacts
+*.log
+*.pid
+
+# Ignore outputs
+outputs/
+uploads/

@@ -1,0 +1,7 @@
+{
+  "prediction": "Model Classification: NORMAL\nConfidence Score: 0.999 (99.9%)\nAnalysis Method: ResNet18 CNN with GradCAM visualization\nAffected Regions: left middle lung field, right middle lung field, left lower lung field, right lower lung field\nImage: 73122dfb-23c2-4a3e-bf6c-4ba4ee5771d3_IM-0033-0001-0001.jpeg",
+  "findings": "Findings:\n\nThe chest radiograph shows no evidence of acute cardiopulmonary abnormalities. The lung fields are clear and there are no infiltrates or consolidations present. The heart size appears normal. The AI analysis supports these findings, indicating a normal chest radiograph.\n- Highlighted regions on Grad-CAM show attention focused on: left middle lung field, right middle lung field, left lower lung field, right lower lung field\n- AI model prediction: NORMAL (confidence: 1.00)\n\nImpression:\n\nThe chest X-ray shows clear lung fields with no abnormalities.\n\nRecommendations:\nNo acute findings. Routine clinical correlation as indicated.",
+  "causes": "No pathological condition detected.",
+  "treatments": "No treatment required for normal chest X-ray findings.",
+  "prevention": "Maintain good respiratory health through regular exercise, vaccination, and avoiding smoking."
+}

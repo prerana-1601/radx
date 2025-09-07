@@ -1,0 +1,37 @@
+# torch and torchvision are installed separately in Dockerfile
+timm
+pandas
+numpy
+scikit-learn
+matplotlib
+pillow
+fastapi
+uvicorn[standard]
+pydantic
+mlflow
+opencv-python
+python-dotenv
+langchain-openai
+langchain-chroma
+langchain-text-splitters
+langchain-community
+beautifulsoup4
+requests
+lxml
+pypdf
+
+# Additional packages for production API
+python-multipart
+aiofiles
+python-jose[cryptography]
+passlib[bcrypt]
+sqlalchemy
+psycopg2-binary
+alembic
+redis
+celery
+prometheus-client
+google-cloud-firestore
+streamlit 
+requests 
+pillow
