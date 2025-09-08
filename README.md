@@ -11,14 +11,15 @@ It includes Dockerized services for easy deployment and uses Google Cloud Firest
 ```bash
 git clone https://github.com/prerana-1601/radx.git
 cd radx
+```
 
 ### 2. Create a .env file
 
 Add your environment variables (e.g., your OpenAI API key).
 
-'''
+```bash
 OPENAI_API_KEY=your_api_key_here
-'''
+```
 
 ### 3. Firestore Credentials
 
@@ -26,6 +27,7 @@ The project requires a Google Cloud Firestore service account key (firestore-acc
 
 The JSON file should follow this format (example values, not real):
 
+```bash
 {
   "type": "service_account",
   "project_id": "your-project-id",
@@ -39,33 +41,35 @@ The JSON file should follow this format (example values, not real):
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/your-service-account%40your-project-id.iam.gserviceaccount.com",
   "universe_domain": "googleapis.com"
 }
-
+```
 
 #### Instructions to create your own
 
-Go to Google Cloud Console → IAM & Admin → Service Accounts
-.
+1. Go to Google Cloud Console → IAM & Admin → Service Accounts
 
-Create a new service account.
+2. Create a new service account.
 
-Assign the Firestore User role (or a custom role with read/write to Firestore).
+3. Assign the Firestore User role (or a custom role with read/write to Firestore).
 
-Generate a new JSON key and download it as firestore-access.json.
+4. Generate a new JSON key and download it as firestore-access.json.
 
-Place the file in the project root and set the environment variable:
+5. Place the file in the project root and set the environment variable:
 
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS=firestore-access.json
+```
 
 ### 4. Build and run with Docker Compose
 
-'''
+```bash
 docker compose up --build
-'''
+```
 
-This will spin up:
+### This will spin up:
 
-API service (FastAPI + Uvicorn, available at http://localhost:8000)
+->API service (FastAPI + Uvicorn, available at http://localhost:8000)
 
-UI service (Streamlit app, available at http://localhost:8501)
+>UI service (Streamlit app, available at http://localhost:8501)
 
 
 
