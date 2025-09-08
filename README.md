@@ -75,6 +75,7 @@ docker compose up --build
 
 ### 5. Project Structure
 
+```text
 radx_project/
 ├── api/                     # API code
 ├── streamlit/               # Streamlit frontend
@@ -87,3 +88,4 @@ radx_project/
 ├── run_api.sh               # Script to run API
 ├── firestore-access.json    # (excluded from Git)
 └── .env                     # Environment variables (excluded from Git)
+```
