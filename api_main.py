@@ -16,7 +16,7 @@ from PIL import Image
 import numpy as np
 import cv2
 
-from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks, Query
+from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks, Query, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
@@ -216,7 +216,7 @@ def analyze_gradcam_regions(heatmap, pred_class):
 
     return description, regions
 
-def generate_comprehensive_report(image_analysis, pred_class, confidence, regions):
+def generate_comprehensive_report(image_analysis, pred_class, confidence, regions, patient_context: Optional[dict] = None):
     if qa_chain is None:
         if pred_class == 1:
             findings = "Abnormal chest radiograph findings consistent with pneumonic consolidation."
@@ -228,8 +228,19 @@ def generate_comprehensive_report(image_analysis, pred_class, confidence, region
             recommendations = "Routine follow-up as clinically indicated."
         return findings, impression, recommendations
 
+    context_str = ""
+    if patient_context:
+        context_kv = []
+        for k, v in patient_context.items():
+            if v is None:
+                continue
+            context_kv.append(f"{k}: {v}")
+        if context_kv:
+            context_str = "\nPatient context:\n" + "\n".join(context_kv)
+
     findings_prompt = f"""
     Based on this chest X-ray analysis: {image_analysis}
+    {context_str}
     Generate detailed radiological findings in proper medical terminology.
     Include specific observations about lung fields, heart size, and any abnormalities noted.
     Keep it concise and professional.
@@ -239,20 +250,23 @@ def generate_comprehensive_report(image_analysis, pred_class, confidence, region
     if pred_class == 1:
         impression_prompt = f"""
         Given these chest X-ray findings showing pneumonia in regions: {', '.join(regions) if regions else 'multiple areas'}
+        {context_str}
         Provide a clinical impression statement that would be appropriate for a radiologist's report.
         Include the likely diagnosis and any relevant clinical correlations needed.
         """
     else:
-        impression_prompt = """
+        impression_prompt = f"""
         For a normal chest X-ray with clear lung fields and no abnormalities,
+        {context_str}
         provide a standard radiological impression statement.
         """
 
     impression = ask_qa(impression_prompt, qa_chain)
 
     if pred_class == 1:
-        recommendations_prompt = """
+        recommendations_prompt = f"""
         For a chest X-ray showing findings consistent with pneumonia,
+        {context_str}
         what clinical recommendations should a radiologist include?
         Focus on follow-up imaging, clinical correlation, and next steps.
         """
@@ -338,7 +352,18 @@ async def process_xray_analysis(analysis_id: str):
 
         # Analyze regions and generate report text
         image_analysis, regions = analyze_gradcam_regions(heatmap, pred_class)
-        findings, impression, recommendations = generate_comprehensive_report(image_analysis, pred_class, confidence, regions)
+
+        # Build patient context from record
+        patient_context = {
+            "age": record.get("patient_age"),
+            "sex": record.get("patient_sex"),
+            "smoking_status": record.get("smoking_status"),
+            "presenting_symptoms": record.get("symptoms"),
+            "symptom_duration": record.get("symptom_duration"),
+            "symptom_severity": record.get("symptom_severity"),
+        }
+
+        findings, impression, recommendations = generate_comprehensive_report(image_analysis, pred_class, confidence, regions, patient_context)
         causes, treatments, prevention = get_additional_info(classes[pred_class])
 
         # Build report JSON (PneumoniaInfo)
@@ -383,7 +408,7 @@ Recommendations:
             "report_path": str(report_path),
             "gradcam_path": str(gradcam_path),
             "report_data": report_obj.model_dump(),
-            "processing_time": (datetime.now() - datetime.fromisoformat(record["created_at"])).total_seconds() if record.get("created_at") else None
+            "processing_time": (datetime.now() - datetime.fromisoformat(record["created_at"])) .total_seconds() if record.get("created_at") else None
         })
 
         print(f"Analysis {analysis_id} completed: {classes[pred_class]} ({confidence:.2f})")
@@ -403,7 +428,13 @@ async def analyze_xray(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     patient_id: Optional[str] = None,
-    patient_name: Optional[str] = None
+    patient_name: Optional[str] = None,
+    patient_age: Optional[str] = Form(None),
+    patient_sex: Optional[str] = Form(None),
+    smoking_status: Optional[str] = Form(None),
+    symptoms: Optional[str] = Form(None),
+    symptom_duration: Optional[str] = Form(None),
+    symptom_severity: Optional[str] = Form(None),
 ):
     if not file.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail="File must be an image")
@@ -424,6 +455,12 @@ async def analyze_xray(
         "file_path": str(file_path),
         "patient_id": patient_id,
         "patient_name": patient_name,
+        "patient_age": patient_age,
+        "patient_sex": patient_sex,
+        "smoking_status": smoking_status,
+        "symptoms": symptoms,
+        "symptom_duration": symptom_duration,
+        "symptom_severity": symptom_severity,
         "status": AnalysisStatus.PENDING,
         "created_at": now_iso,
         "updated_at": now_iso
